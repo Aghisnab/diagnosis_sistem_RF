@@ -1,0 +1,110 @@
+/* === Statistik Cards === */
+.card-statistik {
+  transition: transform 0.3s ease-in-out;
+  border-radius: 12px;
+  min-height: 100px;  /* Atur sesuai kebutuhan */
+  padding: 20px 10px; /* Sesuaikan agar tidak terlalu besar */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-statistik:hover {
+  transform: scale(1.03);
+}
+
+.card-statistik h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.card-statistik h5 {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.card-statistik h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* === Title Section Umum === */
+.title-section h2 {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 1.8rem;
+}
+
+.title-section p {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+/* Mengurangi jarak antar section */
+.site-section {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+/* === Chart Container === */
+#pieChart {
+  max-width: 100%;
+  margin: auto;
+  margin-top: 20px;
+}
+
+/* === Owl Carousel Cards === */
+.owl-promo .card {
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+.owl-promo .card:hover {
+  box-shadow: 0 0 15px rgba(0, 128, 0, 0.2);
+  transform: translateY(-5px);
+}
+
+/* === Responsive Statistic Card === */
+/* Responsif kecil */
+@media (max-width: 576px) {
+  .site-section {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .title-section h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* === Info Text Chart === */
+canvas#pieChart {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+/* === Tombol Detail Penyakit === */
+.btn-outline-success {
+  transition: 0.2s ease-in-out;
+}
+
+.btn-outline-success:hover {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.section-divider {
+  border-top: 1px solid #eee;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.statistik-user {
+  padding-bottom: 10px; /* dari 50px jadi 10px */
+}
+
+.grafik-user {
+  padding-top: 10px; /* dari 50px jadi 10px */
+}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Diagnosis{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/diagnosis.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h4 class="text-center mb-4">Silakan inputkan data dan gejala!</h4>
+  <div class="card shadow-sm p-4">
+    <form method="POST" action="{{ url_for('diagnosis') }}">
+      <!-- Data Pasien -->
+      <h5 class="mb-3">Data Pasien</h5>
+      <div class="form-group">
+        <label for="nama">Nama:</label>
+        <input type="text" class="form-control" id="nama" name="nama" required>
+      </div>
+      <div class="form-group">
+        <label for="umur">Umur:</label>
+        <input type="number" class="form-control" id="umur" name="umur" required>
+      </div>
+
+        <!-- Data Pemeriksaan Tambahan -->
+        <hr>
+        <h5 class="mb-3">Data Pemeriksaan Tambahan</h5>
+        <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="suhu">Suhu Tubuh (°C):</label>
+            <input type="number" step="0.1" class="form-control" id="suhu" name="suhu">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="tensi">Tekanan Darah (mmHg):</label>
+            <input type="text" class="form-control" id="tensi" name="tensi" placeholder="Contoh: 120/80">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="berat">Berat Badan (kg):</label>
+            <input type="number" step="0.1" class="form-control" id="berat" name="berat">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="nadi">Nadi (x/menit):</label>
+            <input type="number" class="form-control" id="nadi" name="nadi">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="saturasi">Saturasi Oksigen (%):</label>
+            <input type="number" step="0.1" class="form-control" id="saturasi" name="saturasi">
+        </div>
+        </div>
+
+        <div class="form-group">
+        <label for="keterangan">Keluhan Tambahan:</label>
+        <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Misal: sakit kepala 3 hari, lemas..."></textarea>
+        </div>
+
+      <!-- Gejala -->
+      <hr>
+      <h5 class="mb-3">Gejala</h5>
+      <div class="form-group">
+        <label for="search-gejala">Cari gejala:</label>
+        <input type="text" class="form-control" id="search-gejala" placeholder="Ketik gejala...">
+        <div id="dropdown-gejala" class="list-group mt-1" style="max-height:200px; overflow-y:auto;"></div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label>Gejala yang dipilih:</label><br>
+        <div id="selected-gejala" class="mt-2"></div>
+      </div>
+
+      <!-- Hidden input untuk dikirim ke server -->
+      <div id="hidden-inputs"></div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary px-4">Mulai Diagnosis</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  window.gejalaList = JSON.parse(`{{ daftar_gejala | tojson | safe }}`);
+
+  document.addEventListener('DOMContentLoaded', function () {
+  const flashMessages = [
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          { category: "{{ category }}", message: "{{ message }}" },
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  ];
+
+  flashMessages.forEach(flashData => {
+    if (flashData.message) {
+      let icon = 'info'; // Default
+      if (flashData.category === 'success') icon = 'success';
+      else if (flashData.category === 'danger') icon = 'error';
+      else if (flashData.category === 'warning') icon = 'warning';
+
+      Swal.fire({
+        icon: icon,
+        title: flashData.message,
+        showConfirmButton: false,
+        timer: 2000
+      });
+    }
+  });
+});
+</script>
+<script src="{{ url_for('static', filename='js/diagnosis.js') }}"></script>
+{% endblock %}

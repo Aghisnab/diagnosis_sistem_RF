@@ -1,0 +1,2 @@
+🧬 Fitur terpilih (25):
+['nyeri ulu hati', 'batuk', 'nyeri dada tajam', 'sakit kepala', 'batuk dahak', 'sakit tenggorokan', 'kelelahan', 'regurgitasi', 'mual', 'diare', 'nafsu makan menurun', 'dada terasa berat', 'perut kembung', 'mengi', 'menggigil', 'demam', 'pilek', 'muntah', 'nyeri perut tajam', 'nyeri perut kram', 'bersin', 'sesak napas', 'nyeri perut terbakar', 'hidung tersumbat', 'nyeri seluruh tubuh']

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body text-center">
+                    <h3 class="mb-4 text-primary">Ubah Foto Profil</h3>
+
+                    <!-- Foto sekarang -->
+                    {% set foto_path = user.photo if user.photo else 'img/avatar.svg' %}
+                    <img src="{{ url_for('static', filename=foto_path) }}"
+                        alt="Foto Profil"
+                        class="rounded-circle shadow mb-3"
+                        width="150" height="150">
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="form-group mb-4 text-start">
+                            <label class="form-label fw-semibold">Foto Baru</label>
+                            <input type="file" name="photo" accept="image/*" class="form-control" required>
+                            <div class="form-text">Format JPG/PNG. Maksimal 2MB.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success fw-bold">Simpan Perubahan</button>
+                            <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">Kembali ke Profil</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelector('input[name="photo"]').addEventListener('change', function(e) {
+    const preview = document.querySelector('img[alt="Foto Profil"]');
+    const file = e.target.files[0];
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+    }
+});
+</script>
+{% endblock %}

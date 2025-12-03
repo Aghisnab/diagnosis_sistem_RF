@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>{% block title %}Diagnosis System{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='font/icomoon/style.css' ) }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css' ) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='font/flaticon/font/flaticon.css' ) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/magnific-popup.css' ) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.css' ) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/owl.carousel.min.css' ) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/owl.theme.default.min.css' ) }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/aos.css' ) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css' ) }}">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+  <div class="site-wrap">
+    <div class="site-navbar py-2">
+
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+            <div class="logo">
+                <div class="site-logo">
+                <a href="{{ url_for('dashboard') }}" class="js-logo-clone"><strong class="text-primary">Sistem</strong>Diagnosis</a>
+                </div>
+            </div>
+            <div class="main-nav d-none d-lg-block">
+                <nav class="site-navigation text-right text-md-center" role="navigation">
+                <ul class="site-menu js-clone-nav d-none d-lg-block">
+                    <li class="{% if request.endpoint in ['dashboard', 'admin_dashboard', 'user_dashboard'] %}active{% endif %}">
+                    <a href="{{ url_for('dashboard') }}">Home</a>
+                    </li>
+                    <li class="{% if request.endpoint == 'gejala' %}active{% endif %}">
+                        <a href="{{ url_for('gejala') }}">Gejala</a>
+                    </li>
+                    <li class="{% if request.endpoint == 'penyakit' %}active{% endif %}">
+                        <a href="{{ url_for('penyakit') }}">Penyakit</a>
+                    </li>
+                    <li class="{% if request.endpoint == 'riwayat' %}active{% endif %}">
+                      <a href="{{ url_for('riwayat') }}">Riwayat Diagnosis</a>
+                    </li>
+                    {% if current_user.is_authenticated and current_user.role.value == 'admin' and 'Admin' in current_user.profesi %}
+                        <li class="{% if request.endpoint == 'user' %}active{% endif %}">
+                            <a href="{{ url_for('users') }}">Pengguna</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                </nav>
+            </div>
+            <div class="d-flex align-items-center ml-auto">
+
+                <!-- Tombol Search -->
+                <a href="#" class="icons-btn d-inline-block js-search-open mr-3" title="Cari">
+                <span class="icon-search" style="font-size: 20px;"></span>
+                </a>
+
+                <!-- Search Bar (pop-up) -->
+                <div class="search-wrap" style="display: none;">
+                <div class="container">
+                    <a href="#" class="search-close js-search-close"><span class="icon-close2"></span></a>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search keyword and hit enter...">
+                </div>
+                </div>
+
+                <!-- User Info: Avatar + Username + Dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="{{ url_for('static', filename=(current_user.photo.replace('static/', '') if current_user.photo else 'img/avatar.svg')) }}" alt="Avatar" width="36" height="36" class="rounded-circle mr-2" style="object-fit: cover;">
+                        <strong class="text-dark">{{ current_user.username }}</strong>
+                    </a>
+
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu dropdown-menu-right shadow-sm" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="{{ url_for('profile') }}"><i class="icon-user mr-2"></i> Profil</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="icon-sign-out mr-2"></i> Logout</a>
+                    </div>
+                </div>
+
+                <!-- Hamburger Menu (mobile only) -->
+                <a href="#" class="site-menu-toggle js-menu-toggle ml-3 d-inline-block d-lg-none">
+                    <span class="icon-menu"></span>
+                </a>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+      {% block content %}
+      <!-- Konten utama akan diisi oleh template turunan -->
+      {% endblock %}
+    </div>
+
+    <footer class="site-footer bg-light">
+        <div class="container">
+            <div class="row">
+            <div class="col-md-6 col-lg-4 mb-4 mb-lg-0">
+                <div class="block-7">
+                <h3 class="footer-heading mb-4">Tentang <strong class="text-primary">Sistem Diagnosis</strong></h3>
+                <p>
+                  Sistem Diagnosis Penyakit Pencernaan dan Pernapasan ini dirancang untuk membantu dalam proses diagnosis awal
+                  secara cepat dan informatif. Ditenagai oleh algoritma   <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" 
+                  class="text-primary fw-bold" target="_blank" rel="noopener noreferrer">Random Forest</a>  dan seleksi fitur,
+                  sistem ini mampu mengidentifikasi penyakit berdasarkan gejala yang dimasukkan.
+                </p>
+                </div>
+            </div>
+            <div class="col-lg-3 mx-auto mb-5 mb-lg-0">
+                <h3 class="footer-heading mb-4">Navigation</h3>
+                <ul class="list-unstyled">
+                  <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                  <li><a href="{{ url_for('gejala') }}">Data Gejala</a></li>
+                  <li><a href="{{ url_for('penyakit') }}">Data Penyakit</a></li>
+                  <li><a href="{{ url_for('riwayat') }}">Riwayat Diagnosis</a></li>
+                </ul>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="block-5 mb-5">
+                <h3 class="footer-heading mb-4">Info</h3>
+                <ul class="list-unstyled">
+                    <li class="address">Jawa Barat, Indonesia</li>
+                    <li class="phone"><a href="tel://23923929210">+2 392 3929 210</a></li>
+                    <li class="email">emailaddress@domain.com</li>
+                </ul>
+                </div>
+            </div>
+            </div>
+            <p class="fw-bold text-dark mt-2 fs-6"><em>Catatan: Sistem ini tidak menggantikan peran dokter dalam menentukan diagnosis resmi.</em></p>
+            <div class="row pt-5 mt-5 text-center">
+            <div class="col-md-12">
+              <p class="mb-0 text-muted small">
+                &copy; <script>document.write(new Date().getFullYear());</script> Sistem Diagnosis Penyakit Pencernaan & Pernapasan |
+                Dikembangkan oleh <a href="https://github.com/Aghisnab" target="_blank" class="text-decoration-none text-primary fw-semibold">Aghisnab</a>
+              </p>
+            </div>
+            </div>
+        </div>
+    </footer>
+  </div>
+
+  <!-- Tombol Back to Top -->
+  <button id="backToTop" title="Kembali ke atas">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/owl.carousel.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/jquery.magnific-popup.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/aos.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>
+
+<script>
+  // Tampilkan search input saat tombol diklik
+  document.querySelector('.js-search-open').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.querySelector('.search-wrap').style.display = 'block';
+    document.getElementById('searchInput').focus();
+  });
+
+  // Tutup search input saat tombol close diklik
+  document.querySelector('.js-search-close').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.querySelector('.search-wrap').style.display = 'none';
+  });
+
+  // Bersihkan highlight sebelumnya
+  function removeHighlights() {
+    const marks = document.querySelectorAll("mark.highlighted");
+    marks.forEach(mark => {
+      const parent = mark.parentNode;
+      parent.replaceChild(document.createTextNode(mark.textContent), mark);
+      parent.normalize();
+    });
+  }
+
+  // Fungsi untuk menghighlight semua hasil pencarian
+  function highlightText(keyword) {
+    const content = document.querySelector(".content-wrapper");
+    const textNodes = [];
+    const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.nodeValue.trim()) {
+        textNodes.push(node);
+      }
+    }
+
+    let firstMatch = null;
+
+    textNodes.forEach(node => {
+      const text = node.nodeValue;
+      const regex = new RegExp(`(${keyword})`, 'gi');
+      if (regex.test(text)) {
+        const span = document.createElement("span");
+        span.innerHTML = text.replace(regex, '<mark class="highlighted">$1</mark>');
+        const parent = node.parentNode;
+        parent.replaceChild(span, node);
+        if (!firstMatch) {
+          firstMatch = span.querySelector("mark.highlighted");
+        }
+      }
+    });
+
+    if (firstMatch) {
+      const rect = firstMatch.getBoundingClientRect();
+      window.scrollTo({
+        top: window.scrollY + rect.top - 100,
+        behavior: 'smooth'
+      });
+    }
+
+    return firstMatch !== null;
+  }
+
+  // Event ketika tekan Enter di kolom pencarian
+  document.getElementById("searchInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const keyword = this.value.trim();
+      removeHighlights();
+
+      if (!keyword) return;
+
+      const found = highlightText(keyword);
+      if (!found) {
+        alert("Tidak ditemukan: " + keyword);
+      }
+    }
+  });
+
+    // Munculkan tombol ketika scroll ke bawah
+  window.onscroll = function () {
+    const btn = document.getElementById("backToTop");
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+      btn.style.display = "flex";
+    } else {
+      btn.style.display = "none";
+    }
+  };
+
+  // Scroll ke atas saat tombol diklik
+  document.getElementById("backToTop").addEventListener("click", function () {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+</script>
+

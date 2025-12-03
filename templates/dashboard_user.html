@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_user.css') }}">
+
+<!-- Carousel Hero -->
+<div class="owl-carousel owl-single px-0">
+  <div class="site-blocks-cover overlay">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 mx-auto align-self-center">
+          <div class="site-block-cover-content text-center">
+            <h1 class="mb-0"><strong class="text-primary">Sistem Diagnosis</strong> Penyakit Pencernaan dan Pernapasan</h1>
+            <div class="row justify-content-center mb-5">
+              <div class="col-lg-6 text-center">
+                <p>Sistem diagnosis ini memprediksi dua kategori penyakit menggunakan Machine Learning Random Forest berdasarkan gejala yang diinput.</p>
+              </div>
+            </div>
+            <p><a href="{{ url_for('diagnosis') }}" class="btn btn-primary px-5 py-3" style="font-weight: bold;">Lakukan Diagnosis</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistik Diagnosis -->
+<div class="site-section statistik-user">
+  <div class="container">
+    <div class="title-section text-center mb-5">
+      <h2 class="text-primary">Statistik Diagnosa Anda</h2>
+      <p class="text-muted">Rekap diagnosis yang telah Anda lakukan di sistem.</p>
+    </div>
+    <div class="row text-center">
+      <div class="col-md-4 mb-4">
+        <div class="card card-statistik border-primary shadow-sm py-4 h-100">
+          <div class="card-body">
+            <h5 class="text-primary">🩺 Total Diagnosis</h5>
+            <h2 class="font-weight-bold">{{ total_diagnosis }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card card-statistik border-success shadow-sm py-4 h-100">
+          <div class="card-body">
+            <h5 class="text-success">📊 Penyakit Terbanyak</h5>
+            <h6 class="font-weight-bold">{{ nama_terbanyak }}</h6>
+            <p class="text-muted mb-0">{{ jumlah_terbanyak }} kali</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card card-statistik border-info shadow-sm py-4 h-100">
+          <div class="card-body">
+            <h5 class="text-info">🗓️ Diagnosis Terakhir</h5>
+            <h6 class="font-weight-bold">{{ tanggal_terakhir }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pie Chart Penyebaran Penyakit -->
+<div class="site-section grafik-user">
+  <div class="container">
+    <div class="title-section text-center mb-4">
+      <h2 class="text-primary">Distribusi Penyakit Terdiagnosis</h2>
+      <p class="text-muted">Visualisasi frekuensi penyakit berdasarkan riwayat diagnosis Anda.</p>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <canvas id="pieChart" height="250"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Carousel Info Penyakit -->
+<div class="site-section">
+  <div class="container">
+    <div class="title-section text-center mb-5">
+      <h2 class="text-primary">Info Penyakit</h2>
+      <p class="text-muted">Berikut ringkasan penyakit yang tersedia di sistem diagnosis.</p>
+    </div>
+
+    <div class="owl-carousel owl-theme owl-promo">
+      {% for penyakit in penyakit_list %}
+      <div class="item">
+        <div class="card border border-success shadow-sm h-100 px-3 py-4">
+          <div class="card-body text-center">
+            <h5 class="card-title text-success">{{ penyakit.nama_penyakit }}</h5>
+            <hr>
+            <p class="card-text text-muted text-justify" style="min-height: 80px;">
+              {{ penyakit.definisi_penyakit.split(';')[0][:120] }}...
+            </p>
+            <a href="{{ url_for('penyakit', search=request.args.get('search', '')) }}"
+              class="btn btn-sm btn-outline-success px-2 py-1" style="font-size: 0.75rem;">
+              <i class="fas fa-info-circle"></i> Detail
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  $(document).ready(function () {
+    $('.owl-single').owlCarousel({
+      loop: true,
+      items: 1,
+      autoplay: true,
+      autoplayTimeout: 6000,
+      autoplayHoverPause: true,
+      nav: false,
+      dots: false
+    });
+
+    $('.owl-promo').owlCarousel({
+      loop: true,
+      margin: 20,
+      nav: true,
+      dots: true,
+      autoplay: true,
+      autoplayTimeout: 4000,
+      autoplayHoverPause: true,
+      navText: ["", ""],
+      responsive: {
+        0: { items: 1 },
+        600: { items: 2 },
+        1000: { items: 3 }
+      }
+    });
+
+    // ✅ SIMPAN DATA JINJA KE VARIABEL DULU
+    const chartLabels = {{ chart_labels | tojson }};
+    const chartValues = {{ chart_values | tojson }};
+
+    // ✅ SEDIAKAN WARNA CUKUP
+    const colors = [
+      '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+      '#1abc9c', '#8e44ad', '#34495e', '#f1c40f', '#e67e22'
+    ];
+
+    // ✅ BARU GUNAKAN DALAM OBJEK CHART
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    const pieChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: chartLabels,
+        datasets: [{
+          label: 'Jumlah Diagnosis',
+          data: chartValues,
+          backgroundColor: colors.slice(0, chartLabels.length),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${context.parsed}`
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

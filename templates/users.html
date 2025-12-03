@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-2">
+    <h3 class="mb-4">Daftar Pengguna</h3>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <form method="get" class="form-inline w-50">
+            <input type="text" name="search" class="form-control w-100" placeholder="Cari username atau profesi..." value="{{ request.args.get('search', '') }}">
+        </form>
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#userModal" id="btnTambahUser">
+                <i class="fas fa-plus"></i> Tambah
+            </button>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-success text-center">
+            <tr>
+                <th>No</th>
+                <th>Username</th>
+                <th>Profesi</th>
+                <th>Role</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="text-center">
+            {% if users %}
+                {% for user in users %}
+                    <tr>
+                        <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.profesi }}</td>
+                        <td>{{ user.role.value }}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-success btn-sm me-2 btnEditUser"
+                                    data-id="{{ user.id_user }}"
+                                    data-username="{{ user.username }}"
+                                    data-profesi="{{ user.profesi }}"
+                                    data-role="{{ user.role.value }}"
+                                    data-toggle="modal"
+                                    data-target="#userModal">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <a href="{{ url_for('delete_user', id_user=user.id_user) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Yakin ingin menghapus pengguna ini?');">
+                                <i class="fas fa-trash-alt"></i> Hapus
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5">Tidak ada data pengguna.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('users', page=pagination.prev_num, search=request.args.get('search', '')) }}">Sebelumnya</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Sebelumnya</span></li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if pagination.page == page_num %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('users', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('users', page=pagination.next_num, search=request.args.get('search', '')) }}">Berikutnya</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Berikutnya</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- Modal Tambah/Edit User -->
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <form id="userForm" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalLabel">Tambah User</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" name="id_user" id="user_id_user">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" id="user_username" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Profesi</label>
+                <input type="text" name="profession" id="user_profession" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Role</label>
+                <select name="role" id="user_role" class="form-control" required>
+                  <option value="user">Pengguna</option>
+                  <option value="admin">Administrator</option>
+                  <option value="dokter">Dokter</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Password <small>(kosongkan jika tidak diubah)</small></label>
+                <input type="password" name="password" id="user_password" class="form-control">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Simpan</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- SweetAlert2 (tambahkan di <head> atau sebelum </body>) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>   
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ✅ Autofocus ke kolom pencarian saat halaman dimuat
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) searchInput.focus();
+
+    // ✅ Konfirmasi hapus user dengan SweetAlert2
+    document.querySelectorAll('a.btn-outline-danger').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const link = this.getAttribute('href');
+            Swal.fire({
+                title: 'Apakah kamu yakin?',
+                text: 'Data pengguna akan dihapus secara permanen.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = link;
+                }
+            });
+        });
+    });
+
+    // ✅ Tambah User
+    const btnTambahUser = document.getElementById('btnTambahUser');
+    if (btnTambahUser) {
+        btnTambahUser.addEventListener('click', () => {
+            document.getElementById('userForm').action = "{{ url_for('add_user_modal') }}";
+            document.getElementById('userModalLabel').textContent = 'Tambah User';
+            document.getElementById('user_id_user').value = '';
+            document.getElementById('user_username').value = '';
+            document.getElementById('user_profession').value = '';
+            document.getElementById('user_role').value = 'user';
+            document.getElementById('user_password').required = true;
+            document.getElementById('user_password').value = '';
+        });
+    }
+
+    // ✅ Edit User
+    const btnEditUsers = document.querySelectorAll('.btnEditUser');
+    btnEditUsers.forEach(button => {
+        button.addEventListener('click', () => {
+            document.getElementById('userForm').action = "{{ url_for('update_user_modal') }}";
+            document.getElementById('userModalLabel').textContent = 'Edit User';
+            document.getElementById('user_id_user').value = button.getAttribute('data-id');
+            document.getElementById('user_username').value = button.getAttribute('data-username');
+            document.getElementById('user_profession').value = button.getAttribute('data-profesi');
+            document.getElementById('user_role').value = button.getAttribute('data-role');
+            document.getElementById('user_password').required = false;
+            document.getElementById('user_password').value = '';
+        });
+    });
+
+        // SweetAlert flash message
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                Swal.fire({
+                    icon: '{{ 'success' if category == 'success' else 'info' }}',
+                    title: '{{ message }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+});
+</script>
+{% endblock %}

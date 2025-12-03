@@ -1,0 +1,95 @@
+.card {
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 25px;
+  background-color: #f8fdf8;
+}
+
+.form-control,
+.btn {
+  border-radius: 8px;
+}
+
+.badge-gejala {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.badge-gejala i {
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.btn-primary {
+  background-color: #28a745;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #218838;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 1rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+ul.list-group li {
+  background-color: #f8f9fa;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+.faktor-penyebab-box,
+.penanganan-box {
+  min-height: 150px;
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.definisi-box {
+  min-height: 80px;
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+}
+
+@media print {
+  .btn,
+  nav,
+  .navbar,
+  header,
+  .no-print,
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+.tombol-print-wrapper a {
+  margin-left: 20px;
+}
+

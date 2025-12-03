@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_admin.css') }}">
+
+<div class="owl-carousel owl-single px-0">
+  <div class="site-blocks-cover overlay">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 mx-auto align-self-center">
+          <div class="site-block-cover-content text-center">
+            <h1 class="mb-0"><strong class="text-primary">Sistem Diagnosis</strong> Penyakit Pencernaan dan Pernapasan</h1>
+            <div class="row justify-content-center mb-5">
+              <div class="col-lg-6 text-center">
+                <p>Sistem diagnosis ini memanfaatkan algoritma <strong>Random Forest</strong> untuk memprediksi dua kategori penyakit berdasarkan gejala.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="site-section statistik-admin">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-3 mb-4">
+        <div class="card card-statistik-admin shadow-sm">
+          <div class="card-body">
+            <h5>👥<br>Total Pengguna</h5>
+            <h2>{{ total_users }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card card-statistik-admin shadow-sm">
+          <div class="card-body">
+            <h5>🩺<br>Total Diagnosis</h5>
+            <h2>{{ total_diagnosis }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card card-statistik-admin shadow-sm">
+          <div class="card-body">
+            <h5>😷<br>Penyakit</h5>
+            <h2>{{ total_penyakit }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card card-statistik-admin shadow-sm">
+          <div class="card-body">
+            <h5>💬<br>Jumlah Gejala</h5>
+            <h2>{{ total_gejala }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section grafik-admin">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="text-center">📊 Distribusi Penyakit</h5>
+            <canvas id="chartPenyakit"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="text-center">💬 Distribusi Gejala Teratas</h5>
+            <canvas id="chartGejala"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="text-center">📅 Jumlah Diagnosis per Bulan</h5>
+            <canvas id="chartBulanan"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="text-center">🔔 Aktivitas Diagnosis Terbaru</h5>
+            <ul class="list-group list-group-flush">
+              {% for log in aktivitas_terbaru %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                  <span class="text-primary font-weight-bold">{{ log.user }}</span> melakukan diagnosis
+                  <strong>{{ log.penyakit }}</strong> pada {{ log.tanggal }}
+                </span>
+                <span class="badge badge-pill badge-info">+1</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // ✅ Variabel warna hingga 25 data
+    const colors25 = [
+      '#1abc9c', '#3498db', '#9b59b6', '#e74c3c', '#f39c12', '#2ecc71',
+      '#34495e', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#c0392b',
+      '#d35400', '#f1c40f', '#7f8c8d', '#bdc3c7', '#95a5a6', '#e67e22',
+      '#ff9ff3', '#feca57', '#48dbfb', '#1dd1a1', '#ff6b6b', '#5f27cd', '#54a0ff'
+    ];
+
+    // ✅ Ambil data dari Jinja ke JS
+    const chartPenyakitLabels = {{ chart_penyakit_labels | tojson }};
+    const chartPenyakitValues = {{ chart_penyakit_values | tojson }};
+
+    const chartGejalaLabels = {{ chart_gejala_labels | tojson }};
+    const chartGejalaValues = {{ chart_gejala_values | tojson }};
+
+    const chartBulanLabels = {{ chart_bulan_labels | tojson }};
+    const chartBulanValues = {{ chart_bulan_values | tojson }};
+
+    // ✅ Pie Chart: Distribusi Penyakit
+    const chartPenyakit = new Chart(document.getElementById('chartPenyakit'), {
+      type: 'pie',
+      data: {
+        labels: chartPenyakitLabels,
+        datasets: [{
+          label: 'Jumlah Diagnosis',
+          data: chartPenyakitValues,
+          backgroundColor: colors25.slice(0, chartPenyakitLabels.length)
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${context.parsed}`
+            }
+          }
+        }
+      }
+    });
+
+    // ✅ Pie Chart: Distribusi Gejala
+    const chartGejala = new Chart(document.getElementById('chartGejala'), {
+      type: 'pie',
+      data: {
+        labels: chartGejalaLabels,
+        datasets: [{
+          label: 'Frekuensi Gejala',
+          data: chartGejalaValues,
+          backgroundColor: colors25.slice(0, chartGejalaLabels.length)
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${context.parsed}`
+            }
+          }
+        }
+      }
+    });
+
+    // ✅ Bar Chart: Jumlah Diagnosis per Bulan
+    const chartBulanan = new Chart(document.getElementById('chartBulanan'), {
+      type: 'bar',
+      data: {
+        labels: chartBulanLabels,
+        datasets: [{
+          label: 'Jumlah Diagnosis',
+          data: chartBulanValues,
+          backgroundColor: '#3498db'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

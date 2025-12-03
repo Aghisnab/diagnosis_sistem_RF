@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-2">
+    <h3 class="mb-4">Daftar Gejala</h3>
+
+    <div class="d-flex justify-content-start align-items-center mb-3">
+        <form method="get" class="form-inline w-50">
+            <input type="text" name="search" class="form-control w-100" placeholder="Cari gejala..." value="{{ request.args.get('search', '') }}">
+        </form>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-success text-center">
+            <tr>
+                <th>No</th>
+                <th>Nama Gejala</th>
+                {% if current_user.role.value == 'dokter' %}
+                    <th>Aksi</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody class="text-center">
+            {% if gejalas %}
+                {% for gejala in gejalas %}
+                    <tr>
+                        <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                        <td>{{ gejala.gejala }}</td>
+                        {% if current_user.role.value == 'dokter' %}
+                            <td>
+                                {% if current_user.role.value == 'dokter' %}
+                                    <button type="button" class="btn btn-outline-success btn-sm me-2"
+                                            data-toggle="modal"
+                                            data-target="#editGejalaModal"
+                                            data-id-gejala="{{ gejala.id_gejala }}"
+                                            data-gejala="{{ gejala.gejala }}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3">Tidak ada data gejala.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('gejala', page=pagination.prev_num, search=request.args.get('search', '')) }}">Sebelumnya</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Sebelumnya</span></li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if pagination.page == page_num %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('gejala', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('gejala', page=pagination.next_num, search=request.args.get('search', '')) }}">Berikutnya</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Berikutnya</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- Modal Edit Gejala -->
+ {% if current_user.role.value == 'dokter' %}
+<div class="modal fade" id="editGejalaModal" tabindex="-1" role="dialog" aria-labelledby="editGejalaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <form id="editGejalaForm" method="POST" action="{{ url_for('update_gejala') }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editGejalaModalLabel">Edit Gejala</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id_gejala" id="modal_id_gejala">
+          <div class="form-group">
+            <label for="modal_gejala">Nama Gejala</label>
+            <input type="text" class="form-control" id="modal_gejala" name="gejala" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">SIMPAN</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">BATAL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- Script Modal Autofill -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('#editGejalaModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const id = button.data('id-gejala');
+        const nama = button.data('gejala');
+
+        const modal = $(this);
+        modal.find('#modal_id_gejala').val(id);
+        modal.find('#modal_gejala').val(nama);
+    });
+
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) searchInput.focus();
+
+    // SweetAlert flash message
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                Swal.fire({
+                    icon: '{{ 'success' if category == 'success' else 'info' }}',
+                    title: '{{ message }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+});
+</script>
+{% endblock %}

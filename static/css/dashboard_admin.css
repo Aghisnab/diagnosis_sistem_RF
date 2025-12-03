@@ -1,0 +1,42 @@
+.card-statistik-admin {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card-statistik-admin:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.grafik-admin canvas {
+  max-height: 300px;
+}
+
+.list-group-item {
+  font-size: 0.95rem;
+  padding: 12px 16px;
+}
+
+.site-section {
+  padding: 50px 0;
+}
+
+.card h5 {
+  font-weight: 600;
+  color: #444;
+}
+
+.card h2 {
+  font-weight: bold;
+  color: #28a745;
+}
+
+.statistik-admin {
+  padding-bottom: 10px; /* dari 50px jadi 10px */
+}
+
+.grafik-admin {
+  padding-top: 10px; /* dari 50px jadi 10px */
+}

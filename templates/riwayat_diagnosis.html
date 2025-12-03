@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="card mt-2">
+        <h3 class="mb-4 text-center text-success fw-bold">Riwayat Diagnosis</h3>
+
+        <div class="d-flex justify-content-center mb-4">
+            <form method="GET" action="{{ url_for('riwayat') }}" class="form-inline w-100 d-flex justify-content-center">
+                <input type="text" name="search" class="form-control w-50" placeholder="Cari nama pasien atau tanggal..." value="{{ request.args.get('search', '') }}">
+                <button type="submit" class="btn btn-success px-4 ml-2"><i class="fas fa-search"></i> Cari</button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Pasien</th>
+                        <th>Tenaga Medis</th>
+                        <th>Umur</th>
+                        <th>Gejala Dipilih</th>
+                        <th>Hasil Diagnosis</th>
+                        <th>Probabilitas</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data %}
+                        {% for item in data %}
+                            <tr>
+                                <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                                <td>{{ item.nama_pasien }}</td>
+                                <td>{{ item.username }}</td>
+                                <td>{{ item.umur }}</td>
+                                <td class="text-left">
+                                    {% if item.gejala_nama %}
+                                        {% for gejala in item.gejala_nama %}
+                                            <span class="badge badge-secondary mb-1">{{ gejala }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <em class="text-muted">Tidak ada gejala</em>
+                                    {% endif %}
+                                </td>
+                                <td><span class="fw-bold text-success">{{ item.nama_penyakit }}</span></td>
+                                <td>{{ '%.2f'|format(item.probabilitas * 100) }}%</td>
+                                <td>{{ item.tanggal_diagnosis.strftime('%d %B %Y') }}</td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <a href="{{ url_for('detail_riwayat', id_riwayat=item.id_riwayat) }}" class="btn btn-info btn-sm mb-1">
+                                            <i class="fas fa-info-circle"></i> Detail
+                                        </a>
+                                        {% if current_user.role.value == 'dokter' %}
+                                            <button type="button"
+                                                data-toggle="modal"
+                                                data-target="#editModal{{ item.id_riwayat }}"
+                                                data-id="{{ item.id_riwayat }}"
+                                                data-nama_pasien="{{ item.nama_pasien }}"
+                                                data-umur="{{ item.umur }}"
+                                                data-catatan="{{ item.catatan }}"
+                                                data-diagnosis_akhir="{{ item.diagnosis_akhir }}"
+                                                class="btn btn-warning btn-sm text-white mb-1">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                        {% endif %}
+
+                                        {% if current_user.role.value == 'dokter' or current_user.id_user == item.user_id %}
+                                            <form method="POST" action="{{ url_for('delete_riwayat', id_riwayat=item.id_riwayat) }}" class="formHapusRiwayat d-inline">
+                                                <button type="submit" class="btn btn-danger btn-sm btnHapusRiwayat">
+                                                    <i class="fas fa-trash-alt"></i> Hapus
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="10">Tidak ada data riwayat diagnosis.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if pagination %}
+<nav aria-label="Navigasi halaman">
+  <ul class="pagination justify-content-center mt-3">
+    {% if pagination.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('riwayat', page=pagination.prev_num, search=request.args.get('search', '')) }}">Sebelumnya</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Sebelumnya</span></li>
+    {% endif %}
+
+    {% for page_num in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+      {% if page_num %}
+        <li class="page-item {% if pagination.page == page_num %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('riwayat', page=page_num, search=request.args.get('search', '')) }}">{{ page_num }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('riwayat', page=pagination.next_num, search=request.args.get('search', '')) }}">Berikutnya</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Berikutnya</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+
+<!-- Modal -->
+{% for item in data %}
+<div class="modal fade" id="editModal{{ item.id_riwayat }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ item.id_riwayat }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content rounded-3 shadow-lg">
+      <form action="{{ url_for('edit_riwayat', id_riwayat=item.id_riwayat) }}" method="POST">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="editModalLabel{{ item.id_riwayat }}"><i class="fas fa-edit mr-2"></i> Edit Riwayat Diagnosis</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Tutup">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" name="id_riwayat" value="{{ item.id_riwayat }}">
+
+          <!-- Nama Pasien -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Nama Pasien</label>
+            <input type="text" name="nama_pasien" class="form-control" value="{{ item.nama_pasien }}" required>
+          </div>
+
+          <!-- Umur -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Umur</label>
+            <input type="number" name="umur" class="form-control" value="{{ item.umur }}" required>
+          </div>
+
+          <!-- Catatan Medis -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Catatan Medis</label>
+            <textarea name="catatan" class="form-control" rows="4" required>{% if item.catatan and 'Diagnosis Akhir:' in item.catatan %}
+{{ item.catatan.split('Diagnosis Akhir:')[0].strip() }}
+{% else %}
+{{ item.catatan }}
+{% endif %}</textarea>
+          </div>
+
+          <!-- Diagnosis Akhir -->
+          <div class="form-group mb-2">
+            <label class="font-weight-bold">Diagnosis Akhir</label>
+            <textarea name="diagnosis_akhir" class="form-control modal_diagnosis_akhir" rows="4" placeholder="Masukkan diagnosis akhir...">{% if item.catatan and 'Diagnosis Akhir:' in item.catatan %}
+{{ item.catatan.rsplit('Diagnosis Akhir:', 1)[1].strip() }}
+{% else %}Belum ada data{% endif %}</textarea>
+            <small class="text-muted">Diagnosis ini bisa diedit langsung jika sudah ada.</small>
+          </div>
+        </div>
+
+        <div class="modal-footer d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times-circle"></i> Batal
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- jQuery Bootstrap 4 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('[id^="editModal"]').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const modal = $(this);
+        modal.find('.modal_id').val(button.data('id'));
+        modal.find('.modal_nama_pasien').val(button.data('nama_pasien'));
+        modal.find('.modal_umur').val(button.data('umur'));
+        modal.find('.modal_catatan').val(button.data('catatan'));
+    });
+
+    // Fokuskan input pencarian saat halaman dimuat
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) searchInput.focus();
+
+    // SweetAlert untuk hapus riwayat
+    $('.formHapusRiwayat').on('submit', function (e) {
+        e.preventDefault();
+        const form = this;
+        Swal.fire({
+            title: 'Yakin ingin menghapus?',
+            text: 'Riwayat diagnosis ini akan dihapus secara permanen.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const flashMessages = [
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          { category: "{{ category }}", message: "{{ message }}" },
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  ];
+
+  flashMessages.forEach(flashData => {
+    if (flashData.message) {
+      let icon = 'info'; // Default
+      if (flashData.category === 'success') icon = 'success';
+      else if (flashData.category === 'danger') icon = 'error';
+      else if (flashData.category === 'warning') icon = 'warning';
+
+      Swal.fire({
+        icon: icon,
+        title: flashData.message,
+        showConfirmButton: false,
+        timer: 2000
+      });
+    }
+  });
+});
+</script>
+
+{% if empty_data %}
+<script>
+Swal.fire({
+    icon: 'info',
+    title: 'Tidak ada data ditemukan',
+    text: 'Coba periksa kembali kata kunci pencarian.',
+    confirmButtonText: 'OK'
+});
+</script>
+{% endif %}
+{% endblock %}

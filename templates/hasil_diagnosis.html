@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Hasil Diagnosis{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/diagnosis.css') }}">
+
+<div class="container mt-5">
+  <div class="card shadow-lg border-0 rounded-4 p-4">
+    <h3 class="text-center text-primary mb-4"><strong>Hasil Diagnosis</strong></h3>
+
+    <div class="mb-3 row">
+      <label class="col-sm-3 col-form-label"><strong>Nama Pasien:</strong></label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" value="{{ riwayat.nama_pasien }}" readonly>
+      </div>
+    </div>
+
+    <div class="mb-3 row">
+      <label class="col-sm-3 col-form-label"><strong>Umur:</strong></label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" value="{{ riwayat.umur }}" readonly>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <h5 class="text-success"><strong>Penyakit Utama</strong></h5>
+      <div class="row g-2 mb-2">
+        <div class="col-md-4">
+          <div class="form-control text-center">{{ hasil[0][0] }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-control text-center">{{ '%.2f'|format(hasil[0][1]*100) }}%</div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-control text-center">{{ tingkat }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label><strong>Definisi Penyakit:</strong></label>
+      <div class="form-control bg-light definisi-box">{{ penyakit.definisi_penyakit }}</div>
+    </div>
+
+    <!-- Faktor Penyebab -->
+    <div class="mb-3">
+    <label><strong>Faktor Penyebab:</strong></label>
+    <div class="form-control bg-light faktor-penyebab-box">
+        {% for item in penyakit.penyebab.split(';') if item.strip() %}
+        <div class="mb-1">{{ item.strip() }}</div>
+        {% endfor %}
+    </div>
+    </div>
+
+    <!-- Penanganan -->
+    <div class="mb-3">
+    <label><strong>Penanganan:</strong></label>
+    <div class="form-control bg-light faktor-penyebab-box">
+        {% for item in penyakit.penanganan.split(';') if item.strip() %}
+        <div class="mb-1">{{ item.strip() }}</div>
+        {% endfor %}
+    </div>
+    </div>
+  
+<!-- Penanganan 
+    {% set ordered_catatan = [
+        ('Suhu', data_catatan.suhu),
+        ('Tensi', data_catatan.tensi),
+        ('Berat Badan', data_catatan.berat),
+        ('Nadi', data_catatan.nadi),
+        ('Saturasi', data_catatan.saturasi)
+    ] %}
+
+    <div class="mb-3">
+
+        <div class="row g-3 mb-3">
+        {% for i in range(0, 3) %}
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 bg-light text-center p-3 h-100">
+            <div class="fw-bold text-dark">{{ ordered_catatan[i][0] }}</div>
+            <div class="fs-6 text-primary">{{ ordered_catatan[i][1] if ordered_catatan[i][1] != '' else '-' }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+
+        <div class="row g-3 mb-3">
+        {% for i in range(3, 5) %}
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 bg-light text-center p-3 h-100">
+            <div class="fw-bold text-dark">{{ ordered_catatan[i][0] }}</div>
+            <div class="fs-6 text-primary">{{ ordered_catatan[i][1] if ordered_catatan[i][1] != '' else '-' }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+
+
+        <div class="row g-3">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-3 bg-light p-3">
+            <div class="fw-bold text-dark text-center">Keluhan</div>
+            <div class="fs-6 text-primary text-justify px-2">
+                {{ data_catatan.keluhan if data_catatan.keluhan != '' else '-' }}
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+-->
+
+    <div class="mb-3">
+      <label><strong>Kemungkinan Lainnya:</strong></label>
+      <ul class="list-group">
+        {% for p, prob, _ in hasil[1:3] %}
+          {% if prob >= 0.6 %}
+            {% set tingkat_lain = "Tinggi" %}
+          {% elif prob >= 0.4 %}
+            {% set tingkat_lain = "Sedang" %}
+          {% else %}
+            {% set tingkat_lain = "Rendah" %}
+          {% endif %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ p }}</strong><br>
+              Probabilitas: {{ '%.2f' | format(prob * 100) }}%<br>
+              Tingkat Keyakinan: {{ tingkat_lain }}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="{{ url_for('diagnosis') }}" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm">Diagnosis Ulang</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

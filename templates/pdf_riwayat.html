@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Riwayat Diagnosis PDF</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      color: #2c2c2c;
+      font-size: 13.5px;
+      margin: 40px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1a3c63;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin-bottom: 22px;
+    }
+
+    .section-title {
+      font-weight: bold;
+      font-size: 15px;
+      color: #1a3c63;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-weight: bold;
+      display: inline-block;
+      min-width: 120px;
+      color: #444;
+      margin-bottom: 2px;
+    }
+
+    .data-row {
+      margin-bottom: 6px;
+    }
+
+    .box {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+      padding: 10px 12px;
+      margin-top: 5px;
+    }
+
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .flex-item {
+      flex: 1 0 30%;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    .diagnosis {
+      white-space: pre-line;
+      font-family: Georgia, serif;
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .no-border {
+      border: none !important;
+      background: none !important;
+    }
+
+    .bullet-list {
+      margin-top: 6px;
+      padding-left: 18px;
+    }
+
+    .bullet-list li {
+      margin-bottom: 3px;
+    }
+
+    .inline-info {
+      display: inline;
+    }
+
+    .section-tight {
+    margin-bottom: 10px; /* Lebih kecil dari .section biasa */
+    }
+
+    .label-tight {
+    font-weight: bold;
+    margin-bottom: 2px;
+    color: #444;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">Detail Riwayat Diagnosis</div>
+  <div class="subtitle">
+    Dicetak pada: {{ tanggal_cetak }} |
+    <strong>Nama Pasien:</strong> {{ riwayat.nama_pasien }} |
+    <strong>Umur:</strong> {{ riwayat.umur }}
+  </div>
+
+  <div class="section">
+    <div class="data-row"><span class="label">Prediksi Penyakit:</span> {{ riwayat.penyakit.nama_penyakit }}</div>
+    <div class="data-row"><span class="label">Probabilitas:</span> {{ '%.2f'|format(riwayat.probabilitas * 100) }}%</div>
+    <div class="data-row"><span class="label">Definisi:</span> {{ riwayat.penyakit.definisi_penyakit }}</div>
+  </div>
+
+  <div class="section-tight">
+    <div class="label-tight">Faktor Penyebab:</div>
+    {% for item in riwayat.penyakit.penyebab.split(';') if item.strip() %}
+      <div style="margin: 1px 0 2px 12px;"> {{ item.strip() }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="section-tight">
+    <div class="label-tight">Penanganan:</div>
+    {% for item in riwayat.penyakit.penanganan.split(';') if item.strip() %}
+      <div style="margin: 1px 0 2px 12px;"> {{ item.strip() }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Catatan Pemeriksaan</div>
+    <div class="flex-row">
+      <div class="flex-item"><span class="label">Suhu:</span> {{ data_catatan.suhu or '-' }}</div>
+      <div class="flex-item"><span class="label">Tensi:</span> {{ data_catatan.tensi or '-' }}</div>
+      <div class="flex-item"><span class="label">Berat Badan:</span> {{ data_catatan.berat or '-' }}</div>
+    </div>
+    <div class="flex-row">
+      <div class="flex-item"><span class="label">Nadi:</span> {{ data_catatan.nadi or '-' }}</div>
+      <div class="flex-item"><span class="label">Saturasi:</span> {{ data_catatan.saturasi or '-' }}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="label">Keluhan:</span> {{ keluhan }}
+  </div>
+
+  {% if kemungkinan_list %}
+  <div class="section">
+    <div class="section-title">Kemungkinan Penyakit Lainnya</div>
+    {% for item in kemungkinan_list %}
+      <div class="data-row">
+        <span class="label">#{{ loop.index }}</span>
+        <strong>{{ item['nama'] }}</strong> — {{ '%.2f'|format(item['prob'] * 100) }}%
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="section">
+    <div class="section-title">Diagnosis Akhir</div>
+    {% if diagnosis_akhir and diagnosis_akhir != '-' %}
+      <div class="diagnosis">
+          {{ diagnosis_akhir.replace(';', '<br>') | safe }}
+      </div>
+    {% else %}
+      <div class="diagnosis" style="color: #999; font-style: italic;">
+        Belum ada data diagnosis akhir.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+</body>
+</html>
